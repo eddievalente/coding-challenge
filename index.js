@@ -51,7 +51,7 @@ const init = async () => {
         path: '/cart/add.js',
         handler: (request, h) => {
             const payload = request.payload;
-            console.log(payload);
+            console.log("PAYLOAD: ",payload);
             
             return { success: true };
         }

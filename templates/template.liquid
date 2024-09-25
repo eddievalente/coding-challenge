@@ -1,2 +1,76 @@
+<!-- templates/product.liquid -->
 
-{% block content %}{% endblock %}
+{% layout none %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>{{ product.title }}</title>
+    <link href="css/style.css" rel="stylesheet" type="text/css" media="all">
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const variants = {{ product.variants | json }};
+        const variantSelect = document.getElementById('variant-select');
+        const priceElement = document.getElementById('product-price');
+        const skuElement = document.getElementById('product-sku');
+        const addToCartButton = document.getElementById('add-to-cart-btn');
+        const cartResponseElement = document.getElementById('cart-response');
+
+        variantSelect.addEventListener('change', function() {
+          const selectedVariantId = this.value;
+          const selectedVariant = variants.find(variant => variant.id == selectedVariantId);
+          if (selectedVariant) {
+            priceElement.textContent = NumberToCurrency(selectedVariant.price);
+            skuElement.textContent = `sku ${selectedVariant.sku}`;
+          }
+        });
+
+        addToCartButton.addEventListener('click', function(event) {
+          event.preventDefault(); // Impede o envio padrão do formulário
+          const productId = variantSelect.value;
+          const theProduct = variants.find(variant => variant.id == productId);
+          fetch('/cart/add.js', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              id: productId,
+              quantity: 1,
+              name: theProduct.name,
+              option: theProduct.title,
+              sku: theProduct.sku,
+              price: theProduct.price,
+              weight: theProduct.weight,
+              barcode: theProduct.barcode,
+            }),
+          })
+          .then(response => response.json())
+          .then(data => {
+            console.log(data);
+            cartResponseElement.textContent = `${theProduct.name} was added successfully to your cart.`;
+          })
+          .catch(error => {
+            cartResponseElement.textContent = 'Error adding to cart. Please try again.';
+          });
+        });
+        
+      });
+
+      function changeMainImage(src) {
+        document.getElementById('main-product-image').src = src;
+      }
+
+      function NumberToCurrency(value) {
+        const priceFormatted = new Intl.NumberFormat('en-CA', { style: 'currency', currency: 'CAD' }).format(value);
+        return priceFormatted;
+      }
+    </script>
+  </head>
+  <body>
+    {% block content -%}
+    {%- endblock %}
+  </body>
+</html>

@@ -1,5 +1,59 @@
-{% layout "template.liquid" %}
+{% layout 'template.liquid' %}
 
 {% block content %}
-    <h1>{{ product.title | capitalize }}</h1>
+
+<div class="product-container">
+  <div class="product-images">
+    <img
+      id="main-product-image"
+      class="product-image"
+      width="100%"
+      height="auto"
+      src="{{ product.featured_image | image_url: width: "100%", height: "auto" }}"
+      alt="{{ product.title }}"
+    >
+    <div class="product-thumbnails">
+      {% for image in product.images %}
+        <img
+          src="{{ image| image_url: width: "17%", height: "auto" }}"
+          alt="{{ product.title }}"
+          width="17%"
+          height="auto"
+          onclick="changeMainImage('{{ image }}')"
+        >
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="product-details">
+    <h1 class="product-title">{{ product.title | capitalize }}</h1>
+    <p class="product-vendor">{{ product.vendor }}</p>
+    <!-- Tags do Produto -->
+    <div class="product-tags">
+      {% for tag in product.tags %}
+        <span class="product-tag">{{ tag }}</span>
+      {% endfor %}
+    </div>
+    <p id="product-price" class="product-price">$ {{ product.variants.first.price | money_with_currency }}</p>
+    <p id="product-sku" class="product-sku">sku {{ product.variants.first.sku }}</p>
+    {% if product.variants.size > 1 %}
+      <div class="product-variants">
+        <label for="variant-select">Size:</label>
+        <select id="variant-select" class="variant-select" name="id">
+          {% for variant in product.variants %}
+            <option value="{{ variant.id }}">{{ variant.title }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    {% else %}
+      <input type="hidden" name="id" value="{{ product.variants.first.id }}">
+    {% endif %}
+    <div class="product-description">
+      {{ product.description }}
+    </div>
+    <button id="add-to-cart-btn" class="add-to-cart">Add to Cart</button>
+    <p id="cart-response" class="cart-response"></p>
+  </div>
+</div>
+
 {% endblock %}
